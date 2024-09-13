@@ -1,0 +1,12 @@
+git config --global user.email "ваш email" : сохраняет данные
+git config --global user.name "ваш никнейм": сохраняет данные о вас
+
+1 раз
+git init
+git remote add origin https://github.com/dowzwi/op45.git
+
+
+всегда
+git add .
+git commit -m 'название'
+git push origin master/main
