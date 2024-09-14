@@ -16,7 +16,7 @@ commands.register_commands(dp)
 quiz.register_quiz(dp)
 FSM_registration.register_fsm_reg(dp)
 fsm_storage.register_store(dp)
-echo.register_echo(dp=dp)
+echo.register_echo(dp)
 
 
 if __name__ == '__main__':
