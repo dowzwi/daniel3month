@@ -11,15 +11,15 @@ from aiogram.types import ReplyKeyboardRemove
 
 
 class FSM_Store(StatesGroup):
-    name_products = State()
-    info_products = State()
-    size = State()
-    category = State()
-    price = State()
-    product_id = State()
-    info_product = State()
-    photo_products = State()
-    submit = State()
+        name_products = State()
+        size = State()
+        category = State()
+        price = State()
+        product_id = State()
+        info_product = State()
+        collection = State()
+        photo_products = State()
+        submit = State()
 
 
 async def start_fsm(message: types.Message):
@@ -78,9 +78,14 @@ async def load_info_product(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['info_product_id'] = message.text
 
-    await message.answer('Скиньте фото товара! ')
+    await message.answer('Коллекция товара?')
     await FSM_Store.next()
 
+async def load_collection(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['collection'] = message.text
+
+    await message.answer('Скиньте фото товара!')
 
 async def load_photo(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -143,10 +148,11 @@ def register_store(dp: Dispatcher):
 
     dp.register_message_handler(start_fsm, commands=['store'])
     dp.register_message_handler(load_name, state=FSM_Store.name_products)
-    dp.register_message_handler(load_info_products, state=FSM_Store.info_products)
     dp.register_message_handler(load_size, state=FSM_Store.size)
     dp.register_message_handler(load_category, state=FSM_Store.category)
     dp.register_message_handler(load_price, state=FSM_Store.price)
     dp.register_message_handler(load_product_id, state=FSM_Store.product_id)
+    dp.register_message_handler(load_info_products, state=FSM_Store.info_product)
+    dp.register_message_handler(load_collection, state=FSM_Store.collection)
     dp.register_message_handler(load_photo, state=FSM_Store.photo_products, content_types=['photo'])
     dp.register_message_handler(submit, state=FSM_Store.submit)
