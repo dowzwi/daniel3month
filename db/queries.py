@@ -37,6 +37,6 @@ CREATE_TABLE_COLLECTION_PRODUCTS = '''
     )'''
 
 INSERT_PRODUCTS_QUERY_COLLECTION = '''
-    INSERT INTO collection (id,product_id, collection)
-    VALUES (?,?,?)
+    INSERT INTO collection (product_id, collection)
+    VALUES (?,?)
 '''

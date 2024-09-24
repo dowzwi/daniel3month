@@ -18,7 +18,6 @@ class fsm_storage(StatesGroup):
     price = State()
     product_id = State()
     collection = State()
-    id = State()
     photo_products = State()
     submit = State()
 
@@ -78,14 +77,9 @@ async def load_collection(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['collection'] = message.text
 
-    await message.answer('Введите свой id')
+    await message.answer('Отправьте фото!')
     await fsm_storage.next()
 
-async def load_id(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['id'] = message.text
-
-    await message.answer('Отправьте фото!')
 
 async def load_photo(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -100,8 +94,7 @@ async def load_photo(message: types.Message, state: FSMContext):
                 f'Категория товара: {data["category_products"]}\n'
                 f'Стоимость: {data["price"]}\n'
                 f'Артикул: {data["product_id"]}\n'
-                f'Коллекция: {data["collection"]}\n'
-                f'Айди: {data["id"]}\n',
+                f'Коллекция: {data["collection"]}\n',
         reply_markup=buttons.submit_button)
 
     await fsm_storage.next()
@@ -127,7 +120,6 @@ async def submit(message: types.Message, state: FSMContext):
             )
 
             await db_main.sql_insert_collection_products(
-                id =data['id'],
                 product_id=data['product_id'],
                 collection_products=data['collection_products']
             )
@@ -163,6 +155,5 @@ def register_store(dp: Dispatcher):
     dp.register_message_handler(load_price, state=fsm_storage.price)
     dp.register_message_handler(load_product_id, state=fsm_storage.product_id)
     dp.register_message_handler(load_collection, state=fsm_storage.collection)
-    dp.register_message_handler(load_id, state=fsm_storage.id)
     dp.register_message_handler(load_photo, state=fsm_storage.photo_products, content_types=['photo'])
     dp.register_message_handler(submit, state=fsm_storage.submit)
