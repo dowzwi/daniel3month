@@ -10,21 +10,20 @@ from aiogram.types import ReplyKeyboardRemove
 # from db import db_main
 
 
-class fsm_storage(StatesGroup):
+class FSM_Store(StatesGroup):
     name_products = State()
     info_products = State()
     size = State()
     category = State()
     price = State()
     product_id = State()
-    collection = State()
     photo_products = State()
     submit = State()
 
 
 async def start_fsm(message: types.Message):
     await message.answer('Укажите название или бренд товара: ', reply_markup=buttons.cancel_button)
-    await fsm_storage.name_products.set()
+    await FSM_Store.name_products.set()
 
 
 async def load_name(message: types.Message, state: FSMContext):
@@ -32,7 +31,7 @@ async def load_name(message: types.Message, state: FSMContext):
         data['name_products'] = message.text
 
     await message.answer('Введите информацию о товаре: ')
-    await fsm_storage.next()
+    await FSM_Store.next()
 
 
 async def load_info_products(message: types.Message, state: FSMContext):
@@ -40,7 +39,7 @@ async def load_info_products(message: types.Message, state: FSMContext):
         data['info_products'] = message.text
 
     await message.answer('Введите размер товара: ')
-    await fsm_storage.next()
+    await FSM_Store.next()
 
 
 async def load_size(message: types.Message, state: FSMContext):
@@ -48,7 +47,7 @@ async def load_size(message: types.Message, state: FSMContext):
         data['size'] = message.text
 
     await message.answer('Введите категорию товара: ')
-    await fsm_storage.next()
+    await FSM_Store.next()
 
 
 async def load_category(message: types.Message, state: FSMContext):
@@ -56,7 +55,7 @@ async def load_category(message: types.Message, state: FSMContext):
         data['category'] = message.text
 
     await message.answer('Введите цену товара: ')
-    await fsm_storage.next()
+    await FSM_Store.next()
 
 
 async def load_price(message: types.Message, state: FSMContext):
@@ -64,21 +63,15 @@ async def load_price(message: types.Message, state: FSMContext):
         data['price'] = message.text
 
     await message.answer('Введите артикул (он должен быть уникальным): ')
-    await fsm_storage.next()
+    await FSM_Store.next()
+
 
 async def load_product_id(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['product_id'] = message.text
 
-    await message.answer('Введите коллекцию: ')
-    await fsm_storage.next()
-
-async def load_collection(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['collection'] = message.text
-
-    await message.answer('Отправьте фото!')
-    await fsm_storage.next()
+    await message.answer('Отправьте фото: ')
+    await FSM_Store.next()
 
 
 async def load_photo(message: types.Message, state: FSMContext):
@@ -91,13 +84,12 @@ async def load_photo(message: types.Message, state: FSMContext):
         caption=f'Название/Бренд товара: {data["name_products"]}\n'
                 f'Информация о товаре: {data["info_products"]}\n'
                 f'Размер товара: {data["size"]}\n'
-                f'Категория товара: {data["category_products"]}\n'
+                f'Категория товара: {data["category"]}\n'
                 f'Стоимость: {data["price"]}\n'
-                f'Артикул: {data["product_id"]}\n'
-                f'Коллекция: {data["collection"]}\n',
+                f'Артикул: {data["product_id"]}\n',
         reply_markup=buttons.submit_button)
 
-    await fsm_storage.next()
+    await FSM_Store.next()
 
 
 async def submit(message: types.Message, state: FSMContext):
@@ -115,15 +107,9 @@ async def submit(message: types.Message, state: FSMContext):
             )
             await db_main.sql_insert_products_details(
                 product_id=data['product_id'],
-                category=data['category_products'],
+                category=data['category'],
                 info_product=data['info_products']
             )
-
-            await db_main.sql_insert_collection_products(
-                product_id=data['product_id'],
-                collection_products=data['collection_products']
-            )
-
             await state.finish()
 
     elif message.text == 'Нет':
@@ -148,12 +134,11 @@ def register_store(dp: Dispatcher):
     dp.register_message_handler(cancel_fsm, Text(equals='Отмена', ignore_case=True), state="*")
 
     dp.register_message_handler(start_fsm, commands=['store'])
-    dp.register_message_handler(load_name, state=fsm_storage.name_products)
-    dp.register_message_handler(load_info_products, state=fsm_storage.info_products)
-    dp.register_message_handler(load_size, state=fsm_storage.size)
-    dp.register_message_handler(load_category, state=fsm_storage.category)
-    dp.register_message_handler(load_price, state=fsm_storage.price)
-    dp.register_message_handler(load_product_id, state=fsm_storage.product_id)
-    dp.register_message_handler(load_collection, state=fsm_storage.collection)
-    dp.register_message_handler(load_photo, state=fsm_storage.photo_products, content_types=['photo'])
-    dp.register_message_handler(submit, state=fsm_storage.submit)
+    dp.register_message_handler(load_name, state=FSM_Store.name_products)
+    dp.register_message_handler(load_info_products, state=FSM_Store.info_products)
+    dp.register_message_handler(load_size, state=FSM_Store.size)
+    dp.register_message_handler(load_category, state=FSM_Store.category)
+    dp.register_message_handler(load_price, state=FSM_Store.price)
+    dp.register_message_handler(load_product_id, state=FSM_Store.product_id)
+    dp.register_message_handler(load_photo, state=FSM_Store.photo_products, content_types=['photo'])
+    dp.register_message_handler(submit, state=FSM_Store.submit)
